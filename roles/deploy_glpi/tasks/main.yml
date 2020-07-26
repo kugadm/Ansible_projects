@@ -1,0 +1,85 @@
+- block: #=== Block for Redhat ===
+    - name: Packages Installed
+      yum: name={{ packages }} 
+
+    - name: Enebled remi for PHP 
+      shell: yum module enable -y php:remi-{{ php_version }}
+
+    - name: Php Packages Install
+      yum: name={{ php_packages }} enablerepo=remi-{{ php_version }}
+
+    - name: Start and enabled on boot Web Server
+      service: name=httpd state=started enabled=yes
+
+    - name: Start the MySQL service
+      service: name=mysqld state=started enabled=yes  
+
+    - name: Copy Distributiv Glpi and dump db to Server 
+      copy: src={{ item }} dest={{ destin_folder }} mode=0555
+      loop:
+        - "glpi-9.1.6.tgz"
+        - "glpi.sql"  
+
+    - name: Unzip Destributive 
+      shell: gunzip /var/www/html/glpi-9.1.6.tgz
+
+    - name: Unarchive a file that is already on the remote machine
+      unarchive:
+        src: /var/www/html/glpi-9.1.6.tar
+        dest: /var/www/html/
+        owner: apache
+        group: apache
+        remote_src: yes
+        extra_opts:
+          - --strip=1
+      notify: Restart Apache RedHat
+
+    - name: Set Sebool for SELinux
+      seboolean:
+        name: '{{ item.name }}'
+        state: yes
+        persistent: yes  
+      with_items:
+      - { name: 'httpd_can_network_connect'}
+      - { name: 'httpd_can_network_connect_db'}
+      - { name: 'httpd_can_sendmail'}       
+
+    - name: Remove the MySQL test database.
+      mysql_db: db=test state=absent
+
+    - name: Create a database for glpi.
+      mysql_db: "db=glpi state=present"  
+
+    - name: Import dump Glpi db to SqlServer
+      mysql_db: "db=glpi state=import target=/var/www/html/glpi.sql"
+      
+    - name: Copy config files
+      copy: src=config_db.php dest=/var/www/html/config owner=apache group=apache mode=0664
+
+    - name: Add permissions 0775 for dir files and config
+      shell: find {{ destin_folder }} -type d -exec chmod 0755 {} \;
+
+    - name: Add permissions 0644 for dir files and config 
+      shell: find {{ destin_folder }} -type f -exec chmod 0644 {} \;
+
+    - name: Add permissions Apache for dir files and config  
+      file: path={{ permissions_directory  }} owner=apache group=apache recurse=yes
+      #      file: path={{ permissions_directory  }} owner=apache group=apache mode=u=rwX,g=rX,o=rX recurse=yes  
+      notify: Set selinux policy for directories
+
+    - name: Remove Distrebute files
+      file:
+        path: /var/www/html/{{ item }}
+        state: absent
+      with_items:
+      - glpi-9.1.6.tar
+      - glpi.sql
+    
+      notify: Run restore context to reload selinux  
+#      copy: src={{ item }} dest={{ config_path }} mode=0555
+#      loop:
+#        - "config_db.php"
+
+  when: ansible_os_family == "RedHat"
+
+

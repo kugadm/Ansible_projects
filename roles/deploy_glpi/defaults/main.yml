@@ -1,0 +1,41 @@
+---
+# defaults file for deploy_glpi
+destin_folder: /var/www/html
+php_version: 7.4
+packages:  
+- unzip
+- vim-enhanced
+- httpd
+#    - mariadb-server
+- mysql-server
+- mysql
+- wget
+- tar
+- zip
+- bzip2
+- policycoreutils-python-utils
+- python3-PyMySQL
+- https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+- https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+php_packages:
+- php
+- php-curl
+- php-fileinfo
+- php-gd
+- php-json
+- php-mbstring
+- php-mysqli
+- php-session
+- php-zlib
+- php-simplexml
+- php-xml
+- php-cli
+- php-domxml
+- php-ldap
+- php-openssl
+- php-xmlrpc
+- php-pecl-apcu
+- php-imap
+- php-pecl-apc
+- php-pecl-selinux
+
