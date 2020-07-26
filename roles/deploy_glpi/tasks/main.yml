@@ -64,7 +64,6 @@
 
     - name: Add permissions Apache for dir files and config  
       file: path={{ permissions_directory  }} owner=apache group=apache recurse=yes
-      #      file: path={{ permissions_directory  }} owner=apache group=apache mode=u=rwX,g=rX,o=rX recurse=yes  
       notify: Set selinux policy for directories
 
     - name: Remove Distrebute files
@@ -76,9 +75,6 @@
       - glpi.sql
     
       notify: Run restore context to reload selinux  
-#      copy: src={{ item }} dest={{ config_path }} mode=0555
-#      loop:
-#        - "config_db.php"
 
   when: ansible_os_family == "RedHat"
 
