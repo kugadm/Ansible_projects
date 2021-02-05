@@ -1,0 +1,8 @@
+---
+# defaults file for deploy_glpi
+run_path: /usr/local/bin
+system_path: /etc/systemd/system
+exporter_user: nodeusr
+exporter_group: nodeusr
+node_exporter: node_exporter
+node_exporter_service: node_exporter.service
