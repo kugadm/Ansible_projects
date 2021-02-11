@@ -45,9 +45,9 @@
         state: started
         enabled: yes
       
-    - name: Add user ec2-user to docker group
-      user:
-        name: ec2-user
-        groups: docker
-        append: yes
+        #    - name: Add user ec2-user to docker group
+        # user:
+        # name: ec2-user
+        #groups: docker
+        #append: yes
 

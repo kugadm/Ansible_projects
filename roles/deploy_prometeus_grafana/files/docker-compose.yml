@@ -1,0 +1,40 @@
+version: '2'
+
+services:
+  prometheus:
+          #    network_mode: "host"
+    image: prom/prometheus
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    volumes:
+      - /etc/prometheus/:/etc/prometheus/
+        #      - {{ prometheus_data_mount_path }}:/prometheus
+
+        #  grafana-ui:
+          #    network_mode: "host"
+    #    image: grafana/grafana
+    #    ports:
+            #      - 3000:3000
+        #    volumes:
+            #      - /etc/grafana/grafana.ini:/etc/grafana/grafana.ini
+
+  grafana:
+          #    network_mode: "host"      
+    image: grafana/grafana:master
+    ports:
+      - "3000:3000"
+        #    volumes:
+        #      - /etc/grafana/grafana.ini:/etc/grafana/grafana.ini
+    environment:
+      GF_RENDERING_SERVER_URL: http://renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_LOG_FILTERS: rendering:debug
+  renderer:
+          #    network_mode: "host"      
+    image: grafana/grafana-image-renderer:latest
+    ports:
+      - 8081
+
+

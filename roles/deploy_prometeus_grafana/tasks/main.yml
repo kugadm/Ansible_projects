@@ -1,5 +1,93 @@
 ---
 # tasks file for deploy_prometeus_grafana
-- name: Packages Installed
-  yum: name={{ packages }}
-  
+- name: Add Docker GPG key.
+  rpm_key:
+    key: "{{ docker_yum_gpg_key }}"
+    state: present
+
+- name: Add Docker repository
+  yum_repository:
+    name: "{{ docker_package }}"
+    description: Docker CE Stable - $basearch
+    baseurl: "{{ docker_yum_repo_url }}"
+    enabled: yes
+    gpgkey: "{{ docker_yum_gpg_key }}"
+    gpgcheck: yes
+
+- name: Install iptables
+  yum:
+    name: "{{ iptables_yum_package }}"
+    state: present
+
+- name: Install Docker
+  yum:
+    name: "{{ docker_package }}"
+    state: present
+    update_cache: true
+
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes  
+
+- name: Ensure group "Prometheus" exists
+  ansible.builtin.group:
+    name: "{{ prometheus_group }}"
+    state: present
+
+- name: Create Prometheus user
+  user:
+    name: "{{ prometheus_user }}"
+    shell: /bin/false
+    groups: "{{ prometheus_group }}"
+
+- name: Create Prometheus Opt directory
+  file:
+    path: "{{ prometheus_home }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0775
+    recurse: yes
+
+- name: Create Prometheus config directory
+  file:
+    path: "{{ prometheus_configs }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0775
+    recurse: yes
+
+- name: Copy Prometheus config
+  copy:
+    src: files/prometheus.yml
+    dest: "{{ prometheus_configs }}/prometheus.yml"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+
+- name: Create Grafana config directory
+  file:
+    path: "{{ grafana_configs }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0775
+    recurse: yes
+
+- name: Copy compose file
+  copy:
+    src: files/docker-compose.yml
+    dest: "{{ prometheus_home }}/docker-compose.yml"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+
+- name: Installing docker compose
+  pip:
+    name: docker-compose
+    state: present
+
+- name: Start Prometheus service
+  docker_service:
+    project_src: "{{ prometheus_home }}"       
