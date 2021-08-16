@@ -1,0 +1,129 @@
+- block: #=== Block for Redhat ===
+    - name: Packages Installed
+      yum: name={{ packages }} 
+
+    - name: PHP Packages Installed
+      yum: name={{ php_packages }}
+
+    - name: Bacula Packages Installed
+      dnf: name={{ bacula_packages }}  
+
+      #    - name: Python Packages Installed
+      # dnf: name={{ python_packages }}
+
+      #    - name: Enebled remi for PHP 
+      #      shell: yum module enable -y php:remi-{{ php_version }}
+
+      #    - name: Php remi Packages Install
+      #      yum: name={{ php_remi_packages }} enablerepo=remi-{{ php_version }}
+
+    - name: Start and enabled on boot Web Server
+      service: name=httpd state=started enabled=yes
+
+      #    - name: Start the MySQL service
+      #      service: name=mysqld state=started enabled=yes  
+      
+    - name: start mysql server and enable it on reboot
+      service: name=mariadb state=started enabled=true
+    - name: Copy Distributiv Glpi and dump db to Server 
+      copy: src={{ item }} dest={{ destin_folder }} mode=0555
+      loop:
+        - "webacula.zip"
+        - "webacula.conf"  
+
+    - name: Unarchive Apps Webacula
+      unarchive:
+        src: webacula.zip
+        dest: /var/www/html/
+        owner: apache
+        group: apache
+        # remote_src: yes
+        #    - name: Unzip Destributive 
+        # shell: unzip /var/www/html/webacula.zip
+
+    - name: Copy config files
+      copy: src=webacula.conf dest=/etc/httpd/conf.d/webacula.conf owner=apache group=apache mode=0664
+
+      # - name: Unarchive a file that is already on the remote machine
+      # unarchive:
+      # src: /var/www/html/webacula.zip
+      # dest: /var/www/html/
+      # owner: apache
+      # group: apache
+      # remote_src: yes
+      # extra_opts:
+      #   - --strip=1
+      #      notify: Restart Apache RedHat
+
+      #    - name: Set Sebool for SELinux
+      #      seboolean:
+      #        name: '{{ item.name }}'
+      #        state: yes
+      #        persistent: yes  
+      #      with_items:
+      #      - { name: 'httpd_can_network_connect'}
+      #      - { name: 'httpd_can_network_connect_db'}
+      #      - { name: 'httpd_can_sendmail'}       
+
+    - name: Remove the MySQL test database.
+      mysql_db: db=test state=absent
+
+    - name: Create a database for bacula.
+      mysql_db: "db=bacula state=present"  
+
+    - name: Add bacula user and all privileges  
+      mysql_user: name=bacula password='*2D34C81704AD060D038AB7B0540EE0757B93B42B' encrypted=yes priv='*.*:ALL' state=present      
+    
+    - name: Create tables bacula
+      shell: /usr/libexec/bacula/make_mysql_tables
+    
+    - name: Create tables webacula
+      shell: /var/www/html/webacula/install/MySql/10_make_tables.sh
+
+    - name: Create acl tables webacula
+      shell: /var/www/html/webacula/install/MySql/20_acl_make_tables.sh  
+   
+    - name: fix bag 1022 version remove old item
+      community.mysql.mysql_query:
+        login_db: bacula
+        query: DELETE FROM bacula.webacula_version
+
+    - name: fix bag 1022 version add new item
+      community.mysql.mysql_query:
+        login_db: bacula
+        query: INSERT INTO bacula.webacula_version (`versionId`) VALUES ('1022')   
+
+
+      #DELETE FROM bacula.webacula_version;
+      #INSERT INTO bacula.webacula_version (`versionId`) VALUES ('1022');
+      # selinux
+      # firewalld
+      #    - name: Import dump Glpi db to SqlServer
+      #      mysql_db: "db=glpi state=import target=/var/www/html/glpi.sql"
+      
+      #    - name: Copy config files
+      #      copy: src=config_db.php dest=/var/www/html/config owner=apache group=apache mode=0664
+
+      #    - name: Add permissions 0775 for dir files and config
+      #      shell: find {{ destin_folder }} -type d -exec chmod 0755 {} \;
+
+      #    - name: Add permissions 0644 for dir files and config 
+      #      shell: find {{ destin_folder }} -type f -exec chmod 0644 {} \;
+
+      #    - name: Add permissions Apache for dir files and config  
+#      file: path={{ permissions_directory  }} owner=apache group=apache recurse=yes
+      #      notify: Set selinux policy for directories
+
+      #    - name: Remove Distrebute files
+      #      file:
+              #        path: /var/www/html/{{ item }}
+        #        state: absent
+        #      with_items:
+              #      - glpi-9.1.6.tar
+        #      - glpi.sql
+    
+        #      notify: Run restore context to reload selinux  
+
+      #  when: ansible_os_family == "RedHat"
+
+

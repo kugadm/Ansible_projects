@@ -1,0 +1,22 @@
+---
+# handlers file for deploy_glpi
+- name: Restart Apache RedHat
+  service: name=httpd state=restarted
+
+- name: Set selinux policy for directories
+  sefcontext:
+   target: '{{ item.target }}(/.*)?'
+   setype: "{{ item.setype }}"
+   reload: True
+   state: present
+  with_items:
+  - { target: '/var/www/html/files', setype: 'httpd_sys_rw_content_t' }
+  - { target: '/var/www/html/config', setype: 'httpd_sys_rw_content_t' }
+
+
+- name: Run restore context to reload selinux
+  shell: restorecon -R -v /var/www/html/{{ item }}
+  with_items:
+  - 'files'
+  - 'config'
+
