@@ -13,7 +13,8 @@
 
     - name: start mysql server and enable it on reboot
       service: name=mariadb state=started enabled=true
-    - name: Copy Distributiv Glpi and dump db to Server 
+
+    - name: Copy Distributiv  and contig apache to Server 
       copy: src={{ item }} dest={{ destin_folder }} mode=0555
       loop:
         - "webacula.zip"
