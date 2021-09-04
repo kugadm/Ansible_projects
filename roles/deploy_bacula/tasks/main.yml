@@ -5,20 +5,34 @@
     - name: PHP Packages Installed
       yum: name={{ php_packages }}
 
-    - name: Bacula Packages Installed
-      dnf: name={{ bacula_packages }}  
-
     - name: Start and enabled on boot Web Server
       service: name=httpd state=started enabled=yes
 
     - name: start mysql server and enable it on reboot
       service: name=mariadb state=started enabled=true
 
+    - name: Selinux time disabled
+      shell: setenforce 0
+
+    - name: Bacula Packages Installed
+      dnf: name={{ bacula_packages }}
+
     - name: Copy Distributiv  and contig apache to Server 
       copy: src={{ item }} dest={{ destin_folder }} mode=0555
       loop:
         - "webacula.zip"
         - "webacula.conf"  
+
+    - name: Copy Distributiv  and contig apache to Server
+      copy: src={{ item }} dest={{ destin_folder_config }} mode=0555
+      loop:
+        - "bacula-dir.conf"
+        - "bacula-fd.conf"
+        - "bacula-sd.conf"
+        - "bconsole.conf"  
+
+          #    - name: Selinux time enabled
+          #      shell: setenforce 1
 
     - name: Unarchive Apps Webacula
       unarchive:
@@ -27,6 +41,26 @@
         owner: apache
         group: apache
         # remote_src: yes
+
+    - name: Set selinux policy for directories
+      sefcontext:
+        target: '/var/www/html/webacula/data/cache(/.*)?'
+        setype: "httpd_cache_t"
+        reload: True
+        state: present
+    
+    - name: Set selinux policy for bconsole
+      sefcontext:
+        target: '/etc/bacula/bconsole.conf'
+        setype: "httpd_cache_t"
+        reload: True
+        state: present 
+
+    - name: Run restore context to reload selinux
+      shell: restorecon -Rv /var/www/html
+
+    - name: Run restore context to reload selinux
+      shell: restorecon -Rv /etc/bacula/bconsole.conf
 
     - name: Copy config files
       copy: src=webacula.conf dest=/etc/httpd/conf.d/webacula.conf owner=apache group=apache mode=0664
@@ -63,21 +97,34 @@
       shell: alternatives --set libbaccats.so /usr/lib64/libbaccats-mysql.so
 
     - name: Add permissions bconsole for sbin
-      file: path=/usr/sbin/bconsole  owner=root group=bacula mode=u+rwx,g+rx,o-rwx
+      file: path=/usr/sbin/bconsole  owner=root group=bacula mode=755
 
     - name: Add permissions bconsole for config
-      file: path=/etc/bacula/bconsole.conf  owner=root group=bacula mode=u=rw,g=r,o-rwx  
+      file: path=/etc/bacula/bconsole.conf  owner=root group=bacula mode=755  
 
-    - name: enable port  80
+    - name: Open port 80 for http access
       firewalld:
-        zone: public
-        port: 80/tcp
+        service: http
         permanent: true
-        state: enabled    
-      #  chown root:bacula /usr/sbin/bconsole
-      #  chmod u=rwx,g=rx,o= /usr/sbin/bconsole
-      #  chown root:bacula /etc/bacula/bconsole.conf
-      #  chmod u=rw,g=r,o= /etc/bacula/bconsole.conf
-      #  systemctl stop firewalld  
+        state: enabled
+    - name: Restart the firewalld 
+      service: 
+        name: firewalld 
+        state: restarted
+
+    - name: Start and enabled on boot bacula service
+      service: name={{ item }} state=started enabled=yes
+      loop:
+        - "bacula-dir"
+        - "bacula-sd"
+        - "bacula-fd"  
+      notify: Restart Apache RedHat 
+
+      # selinux
+      # semanage fcontext -l | grep bacula
+      # semanage port -l | grep -w bacula_port_t
+      # semanage port -l |grep 9101
+      # semanage port -m -t bacula_port_t -p tcp 9101
+  
 
 
