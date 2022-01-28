@@ -1,78 +1,32 @@
 ---
-# Variable configuration.
-#- include_tasks: variables.yml
-
-#- include_tasks: setup-Debian.yml
-#  when: ansible_os_family == 'Debian'
-
-- name: Ensure PostgreSQL Python libraries are installed.
+- name:  Python libraries installed.
   apt:
     name: "{{ postgresql_python_library }}"
     state: present
 
-- name: Ensure PostgreSQL packages are installed.
+- name: Postgres packages installed.
   apt:
     name: "{{ postgresql_packages }}"
     state: present
 
-    #- name: Ensure all configured locales are present.
-    #  locale_gen: "name={{ item }} state=present"
-    #  with_items: "{{ postgresql_locales }}"
-    #  register: locale_gen_result
-
-    #- name: Force-restart PostgreSQL after new locales are generated.
-    #  service:
-    #    name: "{{ postgresql_daemon }}"
-    #    state: restarted
-    #  when: locale_gen_result.changed
-
-  
-##  ######
-#- include_tasks: initialize.yml
-#- include_tasks: configure.yml
-
-- name: Ensure PostgreSQL is started and enabled on boot.
+- name:  Postgres started and enabled on boot.
   service:
     name: "{{ postgresql_daemon }}"
     state: "{{ postgresql_service_state }}"
     enabled: "{{ postgresql_service_enabled }}"    
-    ###########
-    #
-    ############
-    #- name: Ensure PostgreSQL users are present.
-    #  postgresql_user:
-    #    user: "worker"
-    #    password: "worker"
-    #    role_attr_flags: "CREATEDB,NOSUPERUSER"
-    #  become: true
-    #  become_user: postgres     
- 
-#######################
-- name: Ensure PostgreSQL users are present.
+
+- name:  Postgres add worker users.
   postgresql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
     role_attr_flags: "CREATEDB,NOSUPERUSER"
-    #    login_host: "{{ item.login_host | default('localhost') }}"
-    #    login_password: "omit"
-    #    login_user: "{{ postgresql_user }}"
-    #    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_unix_socket_directories[0]) }}"
-    #    port: "{{ item.port | default(omit) }}"
-    #  with_items: "{{ postgresql_users }}"
-    #  no_log: "{{ postgres_users_no_log }}"
   become: true
   become_user: "{{ postgresql_user }}"
 
-- name: Ensure PostgreSQL databases are present.
+- name: Postgres add worker databases .
   postgresql_db:
     name: "{{ db_name }}"
     #    login_password: 
     login_user: "{{ postgresql_user }}"
-    #    owner: 
-    # Configure PostgreSQL.
-#- import_tasks: users.yml
-#- import_tasks: databases.yml
-#- import_tasks: users_props.yml
-#- name: Ensure PostgreSQL Python libraries are installed.
   become: true
   become_user: "{{ postgresql_user }}"
