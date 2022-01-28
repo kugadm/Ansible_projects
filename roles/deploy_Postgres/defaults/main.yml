@@ -1,0 +1,18 @@
+---
+# defaults file for deploy_Postgres
+__postgresql_version: "12"
+__postgresql_data_dir: "/var/lib/postgresql/{{ __postgresql_version }}/main"
+__postgresql_bin_path: "/usr/lib/postgresql/{{ __postgresql_version }}/bin"
+__postgresql_config_path: "/etc/postgresql/{{ __postgresql_version }}/main"
+__postgresql_daemon: postgresql
+postgresql_daemon: postgresql
+postgresql_service_state: started
+postgresql_service_enabled: true
+postgresql_packages:
+  - postgresql-{{ __postgresql_version }}
+  - postgresql-contrib-{{ __postgresql_version }}
+  - libpq-dev
+postgresql_python_library: python3-psycopg2
+db_user: worker
+db_password: worker
+db_name: app
