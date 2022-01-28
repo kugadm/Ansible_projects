@@ -36,9 +36,43 @@
     name: "{{ postgresql_daemon }}"
     state: "{{ postgresql_service_state }}"
     enabled: "{{ postgresql_service_enabled }}"    
-# Configure PostgreSQL.
+    ###########
+    #
+    ############
+    #- name: Ensure PostgreSQL users are present.
+    #  postgresql_user:
+    #    user: "worker"
+    #    password: "worker"
+    #    role_attr_flags: "CREATEDB,NOSUPERUSER"
+    #  become: true
+    #  become_user: postgres     
+ 
+#######################
+- name: Ensure PostgreSQL users are present.
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    role_attr_flags: "CREATEDB,NOSUPERUSER"
+    #    login_host: "{{ item.login_host | default('localhost') }}"
+    #    login_password: "omit"
+    #    login_user: "{{ postgresql_user }}"
+    #    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_unix_socket_directories[0]) }}"
+    #    port: "{{ item.port | default(omit) }}"
+    #  with_items: "{{ postgresql_users }}"
+    #  no_log: "{{ postgres_users_no_log }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Ensure PostgreSQL databases are present.
+  postgresql_db:
+    name: "{{ db_name }}"
+    #    login_password: 
+    login_user: "{{ postgresql_user }}"
+    #    owner: 
+    # Configure PostgreSQL.
 #- import_tasks: users.yml
 #- import_tasks: databases.yml
 #- import_tasks: users_props.yml
 #- name: Ensure PostgreSQL Python libraries are installed.
-
+  become: true
+  become_user: "{{ postgresql_user }}"

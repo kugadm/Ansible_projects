@@ -12,7 +12,22 @@ postgresql_packages:
   - postgresql-{{ __postgresql_version }}
   - postgresql-contrib-{{ __postgresql_version }}
   - libpq-dev
+    #postgresql_python_library: python-psycopg2
+postgresql_user: postgres
+postgresql_group: postgres    
 postgresql_python_library: python3-psycopg2
 db_user: worker
 db_password: worker
 db_name: app
+# - name: exampledb # required; the rest are optional
+#   lc_collate: # defaults to 'en_US.UTF-8'
+#   lc_ctype: # defaults to 'en_US.UTF-8'
+#   encoding: # defaults to 'UTF-8'
+#   template: # defaults to 'template0'
+#   login_host: # defaults to 'localhost'
+#   login_password: # defaults to not set
+#   login_user: # defaults to '{{ postgresql_user }}'
+#   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
+#   port: # defaults to not set
+#   owner: # defaults to postgresql_user
+#   state: # defaults to 'present'
