@@ -19,7 +19,7 @@
   postgresql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
-    role_attr_flags: "CREATEDB,NOSUPERUSER"
+    #    role_attr_flags: "CREATEDB,NOSUPERUSER"
   become: true
   become_user: "{{ postgresql_user }}"
 
@@ -30,3 +30,12 @@
     login_user: "{{ postgresql_user }}"
   become: true
   become_user: "{{ postgresql_user }}"
+
+- name: Ensure we have access from the new user
+  become: yes
+  become_user: postgres
+  postgresql_privs:
+    db: "{{ db_name }}"
+    role: "{{ db_user }}"
+    objs: ALL_IN_SCHEMA
+    privs: SELECT,INSERT,UPDATE,DELETE  
