@@ -31,7 +31,7 @@
   become: true
   become_user: "{{ postgresql_user }}"
 
-- name:  access from worker users.
+- name:  Add access privilege from worker users.
   postgresql_privs:
     db: "{{ db_name }}"
     role: "{{ db_user }}"
