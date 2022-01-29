@@ -35,7 +35,7 @@
   postgresql_privs:
     db: "{{ db_name }}"
     role: "{{ db_user }}"
-    objs: ALL_IN_SCHEMA
-    privs: SELECT,INSERT,UPDATE,DELETE  
+    objs: "{{ db_objs }}"
+    privs: "{{ db_privs }}"  
   become: true
   become_user: "{{ postgresql_user }}"  
