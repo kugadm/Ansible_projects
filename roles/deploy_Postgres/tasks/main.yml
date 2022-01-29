@@ -31,11 +31,11 @@
   become: true
   become_user: "{{ postgresql_user }}"
 
-- name: Ensure we have access from the new user
-  become: yes
-  become_user: postgres
+- name:  access from worker users.
   postgresql_privs:
     db: "{{ db_name }}"
     role: "{{ db_user }}"
     objs: ALL_IN_SCHEMA
     privs: SELECT,INSERT,UPDATE,DELETE  
+  become: true
+  become_user: "{{ postgresql_user }}"  
