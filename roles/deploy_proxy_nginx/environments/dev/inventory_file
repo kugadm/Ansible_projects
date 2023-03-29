@@ -1,0 +1,18 @@
+
+---
+all:
+  vars:
+    ansible_user: vagrant
+
+  hosts:
+    app-back:
+      ansible_host: 51.250.111.13
+#      ansible_ssh_private_key_file: /root/vagrand/.vagrant/machines/swarm/libvirt/private_key
+      ansible_ssh_private_key_file: /home/swarm/private_key
+  children:
+    backend:
+      hosts:
+        app-back:
+    docker:
+      hosts:
+        app-back:

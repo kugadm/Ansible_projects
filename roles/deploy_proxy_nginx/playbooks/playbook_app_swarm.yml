@@ -1,0 +1,9 @@
+
+---
+- name: deploy_app_to_swarm
+  hosts: app-back
+  become: yes
+  gather_facts: false
+
+  roles:
+    - { role: roles/deploy_app_to_swarm }

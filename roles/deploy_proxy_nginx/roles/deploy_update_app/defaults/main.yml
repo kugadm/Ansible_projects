@@ -1,0 +1,18 @@
+---
+# defaults file for deploy_be_app
+docker_packages:
+    - apt-transport-https
+    - ca-certificates
+    - software-properties-common
+    - python3-pip
+    - docker.io
+pip_packages:
+    - docker
+    - jsondiff
+deploy_app_image: kug999/app     
+deploy_app_version: v1.1
+deploy_nginx_image: kug999/nginx:v1.1
+app_ports: "5000:5000"
+app_test: curl -f http://localhost:5000
+nginx_ports: "80:80"
+nginx_test: curl -f http://localhost

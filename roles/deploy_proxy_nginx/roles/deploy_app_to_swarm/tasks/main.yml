@@ -1,0 +1,47 @@
+---
+
+
+- name: Install docker packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "{{ docker_packages }}"
+  tags: docker
+
+- name: Install pip package
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - "{{ pip_packages }}"
+
+- name: Init swarm
+  docker_swarm:
+    state: present
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: mystack
+    compose:
+      - version: '3.7'
+        services:
+          app:
+            image: "{{ deploy_app_image }}:{{ deploy_app_version }}"
+            ports:
+              - "{{ app_ports }}"
+            deploy:
+              replicas: 2
+              update_config:
+                parallelism: 1
+                delay: 3s
+          nginx:
+            image: "{{ deploy_nginx_image }}"
+            ports:
+              - "{{ nginx_ports }}"
+            depends_on:
+              - app
+            deploy:
+              replicas: 2
+              

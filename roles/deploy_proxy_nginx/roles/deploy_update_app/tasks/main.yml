@@ -1,0 +1,36 @@
+---
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: mystack
+    compose:
+      - version: '3.7'
+        services:
+          app:
+            image: "{{ deploy_app_image }}:{{ deploy_app_version }}"
+            ports:
+              - "{{ app_ports }}"
+            deploy:
+              replicas: 2
+              update_config:
+                parallelism: 1
+                delay: 20s
+                order: start-first
+                failure_action: rollback
+                monitor: 1m
+              restart_policy:
+                max_attempts: 3
+            healthcheck:
+              test: curl -sS http://127.0.0.1:5000 || echo 1
+              interval: 30s
+              timeout: 3s
+              retries: 12    
+          nginx:
+            image: "{{ deploy_nginx_image }}"
+            ports:
+              - "{{ nginx_ports }}"
+            depends_on:
+              - app
+            deploy:
+              replicas: 2
+              
