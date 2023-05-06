@@ -1,0 +1,16 @@
+---
+
+- name: Install nginx packages
+  apt:
+    name: "{{ apt_packages }}"
+    state: present
+    update_cache: yes
+
+- name: New nginx location
+  template: 
+    src: nginx.tpl
+    dest: "{{ nginx_path }}/{{ conf_file }}"
+  notify: Restart nginx 
+  
+  
+

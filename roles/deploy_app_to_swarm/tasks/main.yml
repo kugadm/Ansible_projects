@@ -1,0 +1,53 @@
+---
+
+- name: Install docker packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - "{{ apt_packages }}"
+  tags: docker
+
+- name: Install pip package
+  pip:
+    name: "{{ item }}"
+  loop:
+    - "{{ pip_packages }}"
+
+- name: Init swarm
+  docker_swarm:
+    advertise_addr: "{{ default_interface }}"      
+    state: present
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: mystack
+    compose:
+      - version: "{{ version_compose }}"
+        services:
+          app:
+            image: "{{ deploy_app_image }}:{{ deploy_app_version }}"
+            ports:
+              - "{{ app_ports }}"
+            environment:
+              - "{{ export_FLASK_APP }}"
+              - "{{ export_POSTGRESQL }}"    
+            deploy:
+              replicas: 2
+              update_config:
+                parallelism: 1
+                delay: 5s
+                order: start-first
+                failure_action: rollback
+                monitor: 1m
+              restart_policy:
+                max_attempts: 3
+            healthcheck:
+              test: "{{ app_test }}"
+              interval: 30s
+              timeout: 3s
+              retries: 12
+  tags: compose              
+            

@@ -1,0 +1,12 @@
+---
+
+apt_packages:
+    - nginx  
+app_ports: "5000"
+app_test: curl -f http://localhost:5000
+nginx_ports: "80:80"
+nginx_test: curl -f http://localhost
+nginx_path: /etc/nginx/sites-available
+conf_file: default
+service_name: nginx
+service_restart: restarted  

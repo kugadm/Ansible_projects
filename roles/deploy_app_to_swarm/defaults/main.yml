@@ -1,0 +1,23 @@
+---
+
+ipv4_address: "ansible_default_ipv4.address"
+hostname: "ansible_hostname" 
+namehost: "hostvars['localhost'].inventory_hostname"
+host_ip: "192.168.121.23"
+apt_packages:
+    - apt-transport-https
+    - ca-certificates
+    - software-properties-common
+    - python3-pip
+    - docker.io
+pip_packages:
+    - docker
+    - jsondiff
+deploy_app_image: "gukadm/app"     
+deploy_app_version: "v01"
+default_interface: "eth0"
+app_ports: "5000:5000"
+app_test: "curl -sS http://127.0.0.1:5000 || echo 1"
+export_FLASK_APP: "FLASK_APP=app.py"
+export_POSTGRESQL: "POSTGRESQL_URL=postgresql://worker:worker@{{ host_ip }}/app"
+version_compose: '3.7'

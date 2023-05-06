@@ -1,0 +1,67 @@
+---
+
+- name: Postgres packages installed.
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - "{{ postgresql_packages }}"  
+
+- name:  Postgres started and enabled on boot.
+  service:
+    name: "{{ postgresql_daemon }}"
+    state: "{{ postgresql_service_state }}"
+    enabled: "{{ postgresql_service_enabled }}"
+  tags: pg
+
+- name:  Postgres add worker users.
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    # role_attr_flags: "CREATEDB,NOSUPERUSER"
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name: Postgres add worker databases .
+  postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    #    login_password: 
+    login_user: "{{ postgresql_user }}"
+  become: true
+  become_user: "{{ postgresql_user }}"
+
+- name:  Add access privilege from worker users.
+  postgresql_privs:
+    db: "{{ db_name }}"
+    role: "{{ db_user }}"
+    #    new_owner: "{{ db_user }}"
+    objs: "{{ db_objs }}"
+    privs: "{{ db_privs }}"  
+  become: true
+  become_user: "{{ postgresql_user }}" 
+
+  tags: priv
+
+- name: Add all Connection to config
+  lineinfile:
+    path: "{{ postgresql_config }}"
+    insertafter: "{{ postgresql_insert_config }}"
+    line: "{{ postgresql_line_config }}"
+    state: present
+    #    backup: yes
+  notify: Restart postgresql
+  tags: line
+
+- name: Open remote Connection
+  lineinfile:
+    path: "{{ postgresql_hba_config }}"
+    insertafter: "{{ postgresql_insert_hba_config }}"
+    line: "{{ postgresql_line_hba_config }}"
+    state: present
+    #    backup: yes
+  notify: Restart postgresql
+  tags: line
+
+

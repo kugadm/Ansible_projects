@@ -1,0 +1,17 @@
+---
+# defaults file for deploy_be_app
+docker_packages:
+    - apt-transport-https
+    - ca-certificates
+    - software-properties-common
+      #    - ntp
+      #    - python
+      #    - tcpdump
+      #    - wget
+      #    - openssl
+    - curl
+    - python3-pip
+apt_key_url: https://download.docker.com/linux/ubuntu/gpg
+apt_repository: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+docker_version: docker-ce 
+pip_packages: docker

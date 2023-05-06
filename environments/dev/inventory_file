@@ -1,0 +1,18 @@
+
+---
+all:
+  vars:
+    ansible_user: vagrant
+
+  hosts:
+    app-back:
+      ansible_host: 192.168.121.23
+      ansible_ssh_private_key_file: .vagrant/machines/node22/libvirt/private_key
+
+  children:
+    backend:
+      hosts:
+        app-back:
+    docker:
+      hosts:
+        app-back:
